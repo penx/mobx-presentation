@@ -3,7 +3,7 @@ import { makeAutoObservable, set } from 'mobx'
 
 import { getInitialCurrencies, getInitialOrders } from './orders'
 
-class OrderModel {
+export class OrderModel {
   id = ''
   title = ''
   price = ''
@@ -23,12 +23,13 @@ class OrderModel {
   }
 }
 
-class AppStore {
-  orders = getInitialOrders().map((order) => new OrderModel(order))
-  currencies = getInitialCurrencies()
+export class AppStore {
+  orders = []
+  currencies = {}
 
-  constructor() {
+  constructor(data) {
     makeAutoObservable(this)
+    set(this, data)
   }
 
   get total() {
@@ -39,7 +40,10 @@ class AppStore {
   }
 }
 
-const store = new AppStore()
+const store = new AppStore({
+  currencies: getInitialCurrencies(),
+  orders: getInitialOrders(),
+})
 
 const AppStoreContext = createContext(store)
 
