@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext } from 'react'
+import { observer, useLocalObservable } from 'mobx-react-lite'
 
 import { getInitialCurrencies, getInitialOrders } from './orders'
 import { formatCurrency, formatPrice, NumberInput, Table } from './utils'
@@ -6,53 +7,17 @@ import { formatCurrency, formatPrice, NumberInput, Table } from './utils'
 const CurrencyContext = createContext()
 
 const App = () => {
-  const [currencies, setCurrencies] = useState(getInitialCurrencies)
-  const [orders, setOrders] = useState(getInitialOrders)
+  const currencies = useLocalObservable(getInitialCurrencies)
+  const orders = useLocalObservable(getInitialOrders)
 
   const onCurrencyChange = (currency, value) => {
-    setCurrencies((currencies) => ({
-      ...currencies,
-      [currency]: value,
-    }))
+    currencies[currency] = value
   }
-
-  const onPriceChange = (orderId, price) => {
-    setOrders((orders) =>
-      orders.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              price,
-            }
-          : order
-      )
-    )
-  }
-
-  const onCurrencySelect = (orderId, currency) => {
-    setOrders((orders) =>
-      orders.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              currency,
-            }
-          : order
-      )
-    )
-  }
-
-  console.log('orders', orders)
 
   return (
     <CurrencyContext.Provider value={currencies}>
       <h1>Orders</h1>
-      <Orders
-        orders={orders}
-        onPriceChange={onPriceChange}
-        onCurrencySelect={onCurrencySelect}
-      />
-
+      <Orders orders={orders} />
       <OrderTotal orders={orders} />
 
       <h1>Currencies</h1>
@@ -61,22 +26,17 @@ const App = () => {
   )
 }
 
-const Orders = ({ orders, onPriceChange, onCurrencySelect }) => {
+const Orders = observer(({ orders }) => {
   return (
     <Table columns={['Title', 'Price', 'Currency', 'Price']}>
       {orders.map((order) => (
-        <OrderRow
-          key={order.id}
-          order={order}
-          onPriceChange={onPriceChange}
-          onCurrencySelect={onCurrencySelect}
-        />
+        <OrderRow key={order.id} order={order} />
       ))}
     </Table>
   )
-}
+})
 
-const OrderRow = ({ order, onPriceChange, onCurrencySelect }) => {
+const OrderRow = observer(({ order }) => {
   const currencies = useContext(CurrencyContext)
 
   return (
@@ -85,21 +45,25 @@ const OrderRow = ({ order, onPriceChange, onCurrencySelect }) => {
       <td>
         <NumberInput
           value={order.price}
-          onChange={(price) => onPriceChange(order.id, price)}
+          onChange={(price) => {
+            order.price = price
+          }}
         />
       </td>
       <td>
         <CurrencySelect
           value={order.currency}
-          onChange={(currency) => onCurrencySelect(order.id, currency)}
+          onChange={(currency) => {
+            order.currency = currency
+          }}
         />
       </td>
       <td>{formatPrice(order.price * currencies[order.currency])}</td>
     </tr>
   )
-}
+})
 
-const Currencies = ({ currencies, onCurrencyChange }) => (
+const Currencies = observer(({ currencies, onCurrencyChange }) => (
   <Table columns={['Currency', 'Rate']}>
     {Object.entries(currencies).map(([currency, rate]) => (
       <tr key={currency}>
@@ -113,9 +77,9 @@ const Currencies = ({ currencies, onCurrencyChange }) => (
       </tr>
     ))}
   </Table>
-)
+))
 
-const CurrencySelect = ({ value, onChange }) => {
+const CurrencySelect = observer(({ value, onChange }) => {
   const currencies = useContext(CurrencyContext)
 
   return (
@@ -127,9 +91,9 @@ const CurrencySelect = ({ value, onChange }) => {
       ))}
     </select>
   )
-}
+})
 
-const OrderTotal = ({ orders }) => {
+const OrderTotal = observer(({ orders }) => {
   const currencies = useContext(CurrencyContext)
   const total = orders.reduce(
     (acc, order) => (acc += order.price * currencies[order.currency]),
@@ -137,6 +101,6 @@ const OrderTotal = ({ orders }) => {
   )
 
   return <div className="total">{formatPrice(total)}</div>
-}
+})
 
 export default App
