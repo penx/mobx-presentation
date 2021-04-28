@@ -9,9 +9,14 @@ export class OrderModel {
   price = ''
   currency = ''
 
-  constructor(data) {
+  constructor(data, currencies) {
     makeAutoObservable(this)
     set(this, data)
+    this.currencies = currencies
+  }
+
+  get total() {
+    return this.price * this.currencies[this.currency]
   }
 
   setPrice(price) {
@@ -29,7 +34,12 @@ export class AppStore {
 
   constructor(data) {
     makeAutoObservable(this)
+
     set(this, data)
+
+    this.orders.replace(
+      data.orders.map((item) => new OrderModel(item, this.currencies))
+    )
   }
 
   get total() {

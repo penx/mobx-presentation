@@ -29,8 +29,6 @@ const Orders = observer(() => {
 })
 
 const OrderRow = observer(({ order }) => {
-  const { currencies } = useStore()
-
   return (
     <tr key={order.id}>
       <td>{order.title}</td>
@@ -40,7 +38,7 @@ const OrderRow = observer(({ order }) => {
       <td>
         <CurrencySelect value={order.currency} onChange={order.setCurrency} />
       </td>
-      <td>{formatPrice(order.price * currencies[order.currency])}</td>
+      <td>{formatPrice(order.total)}</td>
     </tr>
   )
 })
