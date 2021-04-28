@@ -43,10 +43,7 @@ export class AppStore {
   }
 
   get total() {
-    return this.orders.reduce(
-      (acc, order) => (acc += order.price * this.currencies[order.currency]),
-      0
-    )
+    return this.orders.reduce((acc, order) => (acc += order.total), 0)
   }
 }
 
