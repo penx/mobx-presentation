@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 
-export const Table = ({ children, columns }) => {
+export const Table = React.memo(({ children, columns }) => {
   const columnNames = useMemo(
     () => columns.map((column, index) => <th key={index}>{column}</th>),
     [columns]
@@ -15,7 +15,8 @@ export const Table = ({ children, columns }) => {
       <tbody>{children}</tbody>
     </table>
   )
-}
+})
+Table.displayName = 'Table'
 
 export const formatPrice = (price) => {
   return Number(price).toFixed(2)
@@ -33,7 +34,7 @@ export const formatCurrency = (currency) => {
   return flags[currency] || currency
 }
 
-export const NumberInput = ({ value, onChange }) => {
+export const NumberInput = React.memo(({ value, onChange }) => {
   return (
     <input
       value={value}
@@ -44,4 +45,5 @@ export const NumberInput = ({ value, onChange }) => {
       onChange={(e) => onChange(e.target.value)}
     />
   )
-}
+})
+NumberInput.displayName = 'NumberInput'
